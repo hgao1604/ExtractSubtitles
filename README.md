@@ -1,112 +1,110 @@
-# Subtitle Extractor
+# Bilibili Subtitle Extractor
 
-A Chrome extension that extracts subtitles from Bilibili and YouTube videos, making them accessible to other extensions (like Claude) for summarization and analysis.
+一个Chrome插件，用于提取B站视频字幕，并通过DOM暴露数据供其他插件（如Claude）读取和分析。
 
-## Features
+## 功能
 
-- **Bilibili Support**: Extract CC subtitles from Bilibili videos
-- **YouTube Support**: Extract captions from YouTube videos (work in progress)
-- **DOM Exposure**: Subtitle data is exposed to the page DOM, allowing other extensions to access it
-- **Multiple Languages**: Support for multiple subtitle languages when available
+- 提取B站视频的CC字幕
+- 支持多语言字幕选择
+- 字幕数据通过DOM暴露，方便其他插件访问
+- 可配合Claude插件进行视频内容总结
 
-## Installation
+## 安装
 
-### From Source (Developer Mode)
+### 从源码安装（开发者模式）
 
-1. Clone this repository:
+1. 克隆此仓库：
    ```bash
    git clone https://github.com/hgao1604/ExtractSubtitles.git
    ```
 
-2. Open Chrome and navigate to `chrome://extensions/`
+2. 打开Chrome浏览器，访问 `chrome://extensions/`
 
-3. Enable **Developer mode** (toggle in the top right)
+3. 开启右上角的**开发者模式**
 
-4. Click **Load unpacked** and select the `ExtractSubtitles` folder
+4. 点击**加载已解压的扩展程序**，选择 `ExtractSubtitles` 文件夹
 
-5. The extension icon should appear in your toolbar
+5. 插件图标会出现在工具栏中
 
-## Usage
+## 使用方法
 
-1. Navigate to a Bilibili or YouTube video page
-2. Click the **Subtitle Extractor** extension icon
-3. Click **Extract** to fetch the subtitles
-4. Once extracted, the data is available in the page DOM at `#subtitle-extractor-data`
+1. 打开B站视频页面
+2. 点击工具栏中的**Subtitle Extractor**图标
+3. 选择字幕语言
+4. 点击**提取字幕**按钮
+5. 提取完成后，字幕数据会存储在页面DOM中
 
-### Accessing Extracted Data
+### 访问提取的数据
 
-In the browser console, you can access the subtitle data:
+在浏览器控制台中可以访问字幕数据：
 
 ```javascript
-// Get the subtitle data
+// 获取字幕数据
 const data = JSON.parse(
   document.querySelector('#subtitle-extractor-data')
     .getAttribute('data-subtitles')
 );
 
-// View structure
+// 数据结构
 console.log(data);
 // {
-//   platform: 'bilibili' | 'youtube',
-//   videoId: '...',
-//   title: '...',
-//   language: '...',
-//   extractedAt: '...',
+//   platform: 'bilibili',
+//   videoId: 'BV1xx...',
+//   title: '视频标题',
+//   language: 'zh-CN',
+//   extractedAt: '2024-01-01T00:00:00.000Z',
 //   subtitles: [
-//     { start: 0, end: 2.5, text: '...' },
+//     { start: 0, end: 2.5, text: '字幕内容' },
 //     ...
 //   ]
 // }
 ```
 
-### Integration with Claude Extension
+### 配合Claude插件使用
 
-Create a shortcut in Claude's Chrome extension:
+在Claude的Chrome插件中创建快捷指令：
 
-- **Name**: `summarize-subtitles`
-- **Prompt**:
+- **名称**: `summarize-subtitles`
+- **提示词**:
   ```
-  Read the subtitle data from #subtitle-extractor-data element's data-subtitles attribute.
-  Summarize the video content and list key points.
+  读取页面中 #subtitle-extractor-data 元素的 data-subtitles 属性中的字幕数据，
+  总结视频内容并列出要点。
   ```
 
-## Project Structure
+## 项目结构
 
 ```
 ExtractSubtitles/
-├── manifest.json          # Extension configuration
-├── background.js          # Service worker for API requests
+├── manifest.json              # 插件配置
+├── background.js              # Service Worker
 ├── popup/
-│   ├── popup.html        # Extension popup UI
-│   ├── popup.css         # Popup styles
-│   └── popup.js          # Popup logic
+│   ├── popup.html            # 弹出界面
+│   ├── popup.css             # 样式
+│   └── popup.js              # 界面逻辑
 ├── content-scripts/
-│   ├── shared.js         # Shared utilities
-│   ├── bilibili.js       # Bilibili content script
-│   └── youtube.js        # YouTube content script
+│   ├── shared.js             # 共享工具
+│   └── bilibili.js           # B站内容脚本
 └── injected/
-    ├── bilibili-injector.js  # Bilibili page context script
-    └── youtube-injector.js   # YouTube page context script
+    └── bilibili-injector.js  # B站页面注入脚本
 ```
 
-## How It Works
+## 工作原理
 
-1. **Content Scripts** are injected into video pages to communicate with the extension popup
-2. **Injected Scripts** run in the page context to access video player APIs and subtitle data
-3. **Background Service Worker** handles cross-origin API requests
-4. Extracted subtitles are stored in a hidden DOM element for other extensions to access
+1. **Content Script** 注入到B站视频页面，与插件弹窗通信
+2. **Injected Script** 在页面上下文中运行，访问 `window.__INITIAL_STATE__` 获取视频信息
+3. **Background Service Worker** 处理跨域API请求
+4. 提取的字幕存储在隐藏的DOM元素中，供其他插件访问
 
-## Supported Platforms
+## 注意事项
 
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Bilibili | ✅ Working | Requires video to have CC subtitles |
-| YouTube | 🚧 In Progress | API restrictions being resolved |
+- 视频必须有CC字幕才能提取
+- 部分视频可能没有字幕或字幕受限
+- 建议在B站登录状态下使用
 
 ## License
 
 MIT
 
-## Contributing
+## 贡献
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+欢迎提交Pull Request！

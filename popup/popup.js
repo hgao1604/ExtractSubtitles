@@ -2,12 +2,10 @@
 
 document.addEventListener('DOMContentLoaded', init);
 
-// DOM Elements - initialized after DOM loads
 let elements = {};
 let currentStatus = null;
 
 async function init() {
-  // Initialize elements after DOM is ready
   elements = {
     loading: document.getElementById('loading'),
     error: document.getElementById('error'),
@@ -40,22 +38,18 @@ async function checkStatus() {
 
   try {
     const tab = await getCurrentTab();
-
-    // Check if we're on a supported site
     const url = tab.url || '';
     const isBilibili = url.includes('bilibili.com/video');
-    const isYouTube = url.includes('youtube.com/watch');
 
-    if (!isBilibili && !isYouTube) {
-      showError('Please navigate to a Bilibili or YouTube video page.');
+    if (!isBilibili) {
+      showError('请打开B站视频页面使用此插件');
       return;
     }
 
-    // Send message to content script
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_STATUS' });
 
     if (!response) {
-      showError('Unable to communicate with the page. Try refreshing the page.');
+      showError('无法与页面通信，请刷新页面后重试');
       return;
     }
 
@@ -63,32 +57,26 @@ async function checkStatus() {
     displayStatus(response);
   } catch (error) {
     console.error('Error checking status:', error);
-    showError('Unable to detect video. Try refreshing the page.');
+    showError('无法检测视频信息，请刷新页面后重试');
   }
 }
 
 function displayStatus(status) {
   hideAll();
 
-  // Show video info
   if (status.videoInfo) {
     elements.videoInfo.classList.remove('hidden');
-    elements.platformBadge.textContent = status.platform === 'bilibili' ? 'Bilibili' : 'YouTube';
-    elements.platformBadge.className = `platform-badge ${status.platform}`;
-    elements.videoTitle.textContent = status.videoInfo.title || 'Unknown title';
+    elements.platformBadge.textContent = 'Bilibili';
+    elements.platformBadge.className = 'platform-badge bilibili';
+    elements.videoTitle.textContent = status.videoInfo.title || '未知标题';
   }
 
-  // Handle subtitles
   if (status.hasSubtitles && status.subtitleList?.length > 0) {
-    // Populate language select
     elements.languageSelect.innerHTML = '';
     status.subtitleList.forEach(sub => {
       const option = document.createElement('option');
       option.value = sub.lan;
       option.textContent = sub.lan_doc || sub.lan;
-      if (sub.kind === 'asr') {
-        option.textContent += ' (Auto-generated)';
-      }
       elements.languageSelect.appendChild(option);
     });
 
@@ -103,7 +91,7 @@ async function extract() {
   const language = elements.languageSelect.value;
 
   elements.extractBtn.disabled = true;
-  elements.extractBtn.textContent = 'Extracting...';
+  elements.extractBtn.textContent = '提取中...';
 
   try {
     const tab = await getCurrentTab();
@@ -124,10 +112,10 @@ async function extract() {
     }
   } catch (error) {
     console.error('Error extracting subtitles:', error);
-    showError('Failed to extract subtitles: ' + error.message);
+    showError('提取字幕失败: ' + error.message);
   } finally {
     elements.extractBtn.disabled = false;
-    elements.extractBtn.textContent = 'Extract Subtitles';
+    elements.extractBtn.textContent = '提取字幕';
   }
 }
 
@@ -137,14 +125,11 @@ async function refresh() {
   try {
     const tab = await getCurrentTab();
     await chrome.tabs.sendMessage(tab.id, { type: 'REFRESH_INFO' });
-
-    // Wait a bit for the info to be fetched
     await new Promise(resolve => setTimeout(resolve, 1500));
-
     await checkStatus();
   } catch (error) {
     console.error('Error refreshing:', error);
-    showError('Failed to refresh. Try reloading the page.');
+    showError('刷新失败，请重新加载页面');
   } finally {
     elements.refreshBtn.disabled = false;
   }

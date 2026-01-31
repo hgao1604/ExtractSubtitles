@@ -1,23 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subtitle Extractor</title>
+  <title>B站字幕提取</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Subtitle Extractor</h1>
+      <h1>B站字幕提取</h1>
     </header>
 
     <main>
-      <!-- Status Section -->
       <section id="status-section" class="section">
         <div id="loading" class="loading">
           <span class="spinner"></span>
-          <span>Detecting video...</span>
+          <span>检测视频中...</span>
         </div>
 
         <div id="error" class="error hidden">
@@ -31,44 +30,40 @@
         </div>
       </section>
 
-      <!-- Subtitle Selection -->
       <section id="subtitle-section" class="section hidden">
-        <label for="language-select">Select Language:</label>
+        <label for="language-select">选择语言:</label>
         <select id="language-select" class="select">
-          <option value="">Loading...</option>
+          <option value="">加载中...</option>
         </select>
       </section>
 
-      <!-- Extract Button -->
       <section id="action-section" class="section hidden">
         <button id="extract-btn" class="btn btn-primary">
-          Extract Subtitles
+          提取字幕
         </button>
       </section>
 
-      <!-- Success Message -->
       <section id="success-section" class="section hidden">
         <div class="success">
           <span class="icon">✓</span>
-          <span>Subtitles extracted successfully!</span>
+          <span>字幕提取成功！</span>
         </div>
         <div class="hint">
-          Data is available in the page DOM at <code>#subtitle-extractor-data</code>
+          数据已存储在 <code>#subtitle-extractor-data</code> 元素中
         </div>
       </section>
 
-      <!-- No Subtitles Message -->
       <section id="no-subtitles-section" class="section hidden">
         <div class="warning">
           <span class="icon">ℹ️</span>
-          <span>No subtitles available for this video.</span>
+          <span>此视频没有可用字幕</span>
         </div>
       </section>
     </main>
 
     <footer>
-      <button id="refresh-btn" class="btn btn-secondary" title="Refresh video info">
-        ↻ Refresh
+      <button id="refresh-btn" class="btn btn-secondary" title="刷新视频信息">
+        ↻ 刷新
       </button>
     </footer>
   </div>
