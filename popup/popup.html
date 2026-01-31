@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtitle Extractor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Subtitle Extractor</h1>
+    </header>
+
+    <main>
+      <!-- Status Section -->
+      <section id="status-section" class="section">
+        <div id="loading" class="loading">
+          <span class="spinner"></span>
+          <span>Detecting video...</span>
+        </div>
+
+        <div id="error" class="error hidden">
+          <span class="icon">⚠️</span>
+          <span id="error-message"></span>
+        </div>
+
+        <div id="video-info" class="video-info hidden">
+          <div class="platform-badge" id="platform-badge"></div>
+          <div class="video-title" id="video-title"></div>
+        </div>
+      </section>
+
+      <!-- Subtitle Selection -->
+      <section id="subtitle-section" class="section hidden">
+        <label for="language-select">Select Language:</label>
+        <select id="language-select" class="select">
+          <option value="">Loading...</option>
+        </select>
+      </section>
+
+      <!-- Extract Button -->
+      <section id="action-section" class="section hidden">
+        <button id="extract-btn" class="btn btn-primary">
+          Extract Subtitles
+        </button>
+      </section>
+
+      <!-- Success Message -->
+      <section id="success-section" class="section hidden">
+        <div class="success">
+          <span class="icon">✓</span>
+          <span>Subtitles extracted successfully!</span>
+        </div>
+        <div class="hint">
+          Data is available in the page DOM at <code>#subtitle-extractor-data</code>
+        </div>
+      </section>
+
+      <!-- No Subtitles Message -->
+      <section id="no-subtitles-section" class="section hidden">
+        <div class="warning">
+          <span class="icon">ℹ️</span>
+          <span>No subtitles available for this video.</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <button id="refresh-btn" class="btn btn-secondary" title="Refresh video info">
+        ↻ Refresh
+      </button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
