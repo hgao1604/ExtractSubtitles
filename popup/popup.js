@@ -40,9 +40,10 @@ async function checkStatus() {
     const tab = await getCurrentTab();
     const url = tab.url || '';
     const isBilibili = url.includes('bilibili.com/video');
+    const isYouTube = url.includes('youtube.com/watch');
 
-    if (!isBilibili) {
-      showError('请打开B站视频页面使用此插件');
+    if (!isBilibili && !isYouTube) {
+      showError('请打开 B站 或 YouTube 视频页面使用此插件');
       return;
     }
 
@@ -66,24 +67,62 @@ function displayStatus(status) {
 
   if (status.videoInfo) {
     elements.videoInfo.classList.remove('hidden');
-    elements.platformBadge.textContent = 'Bilibili';
-    elements.platformBadge.className = 'platform-badge bilibili';
-    elements.videoTitle.textContent = status.videoInfo.title || '未知标题';
+
+    if (status.platform === 'youtube') {
+      elements.platformBadge.textContent = 'YouTube';
+      elements.platformBadge.className = 'platform-badge youtube';
+
+      // Show captured count for YouTube
+      if (status.capturedCount > 0) {
+        elements.videoTitle.textContent = `${status.videoInfo.title || '未知标题'} (已捕获 ${status.capturedCount} 条字幕)`;
+      } else {
+        elements.videoTitle.textContent = `${status.videoInfo.title || '未知标题'} (等待捕获字幕...)`;
+      }
+    } else {
+      elements.platformBadge.textContent = 'Bilibili';
+      elements.platformBadge.className = 'platform-badge bilibili';
+      elements.videoTitle.textContent = status.videoInfo.title || '未知标题';
+    }
   }
 
-  if (status.hasSubtitles && status.subtitleList?.length > 0) {
-    elements.languageSelect.innerHTML = '';
-    status.subtitleList.forEach(sub => {
-      const option = document.createElement('option');
-      option.value = sub.lan;
-      option.textContent = sub.lan_doc || sub.lan;
-      elements.languageSelect.appendChild(option);
-    });
-
-    elements.subtitleSection.classList.remove('hidden');
-    elements.actionSection.classList.remove('hidden');
+  // For YouTube, show captured languages or available tracks
+  if (status.platform === 'youtube') {
+    if (status.capturedCount > 0) {
+      elements.languageSelect.innerHTML = '';
+      status.capturedLanguages.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang;
+        option.textContent = lang;
+        elements.languageSelect.appendChild(option);
+      });
+      elements.subtitleSection.classList.remove('hidden');
+      elements.actionSection.classList.remove('hidden');
+    } else if (status.hasSubtitles) {
+      // Show hint to enable subtitles
+      elements.noSubtitlesSection.classList.remove('hidden');
+      const hint = elements.noSubtitlesSection.querySelector('.warning span:last-child');
+      if (hint) {
+        hint.textContent = '请开启字幕并播放视频，字幕将自动捕获';
+      }
+    } else {
+      elements.noSubtitlesSection.classList.remove('hidden');
+    }
   } else {
-    elements.noSubtitlesSection.classList.remove('hidden');
+    // Bilibili logic
+    if (status.hasSubtitles && status.subtitleList?.length > 0) {
+      elements.languageSelect.innerHTML = '';
+      status.subtitleList.forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub.lan;
+        option.textContent = sub.lan_doc || sub.lan;
+        elements.languageSelect.appendChild(option);
+      });
+
+      elements.subtitleSection.classList.remove('hidden');
+      elements.actionSection.classList.remove('hidden');
+    } else {
+      elements.noSubtitlesSection.classList.remove('hidden');
+    }
   }
 }
 
