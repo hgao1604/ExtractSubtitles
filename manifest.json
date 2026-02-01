@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Bilibili Subtitle Extractor",
-  "version": "1.1.0",
-  "description": "Extract subtitles from Bilibili videos for summarization and analysis",
+  "name": "Subtitle Extractor",
+  "version": "1.2.0",
+  "description": "Extract subtitles from Bilibili and YouTube videos",
   "permissions": [
     "activeTab",
     "scripting"
@@ -11,7 +11,9 @@
     "https://www.bilibili.com/*",
     "https://api.bilibili.com/*",
     "https://*.bilivideo.com/*",
-    "https://*.hdslb.com/*"
+    "https://*.hdslb.com/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -21,12 +23,17 @@
       "matches": ["https://www.bilibili.com/video/*"],
       "js": ["content-scripts/shared.js", "content-scripts/bilibili.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube.com/watch*", "https://youtube.com/watch*"],
+      "js": ["content-scripts/shared.js", "content-scripts/youtube.js"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["injected/bilibili-injector.js"],
-      "matches": ["https://www.bilibili.com/*"]
+      "resources": ["injected/bilibili-injector.js", "injected/youtube-injector.js"],
+      "matches": ["https://www.bilibili.com/*", "https://www.youtube.com/*"]
     }
   ],
   "action": {
