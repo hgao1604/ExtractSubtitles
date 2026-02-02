@@ -70,7 +70,11 @@
     }
 
     if (type === 'CAPTURED_SUBTITLES') {
-      capturedSubtitles = data || [];
+      // 只有在本地没有数据时才使用 injector 的数据，避免覆盖
+      if (capturedSubtitles.length === 0 && data && data.length > 0) {
+        capturedSubtitles = data;
+        console.log('[Subtitle Extractor] Synced subtitles from injector:', data.length);
+      }
     }
   });
 
@@ -220,10 +224,10 @@
         return true;
       }
 
-      // 否则请求新数据并等待
+      // 否则请求新的视频信息（不请求字幕，本地已有）
       console.log('[Subtitle Extractor] Requesting fresh video info');
       requestVideoInfo();
-      requestCapturedSubtitles();
+      // 注意：不调用 requestCapturedSubtitles()，避免覆盖本地已捕获的字幕
 
       // 等待 injector 响应，最多等 2 秒
       let attempts = 0;
