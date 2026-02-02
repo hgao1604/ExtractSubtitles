@@ -129,6 +129,27 @@ ExtractSubtitles/
 - 切换视频后需等待几秒重新捕获
 - 如遇到问题，尝试刷新页面
 
+## Privacy Policy
+
+This extension does not collect, store, or transmit any personal data. All subtitle data is processed locally in your browser and is not sent to any external servers.
+
+### Data Handling
+
+- **No data collection**: We do not collect any personal information
+- **No external transmission**: All data stays in your browser
+- **No tracking**: We do not track your browsing behavior
+- **Local processing only**: Subtitles are extracted and stored in the page DOM temporarily
+
+### Permissions Used
+
+| Permission | Purpose |
+|------------|---------|
+| `activeTab` | Access the current video page when you click the extension |
+| `scripting` | Inject scripts to read video and subtitle information |
+| `host_permissions` | Fetch subtitles from Bilibili API and intercept YouTube requests |
+
+---
+
 ## License
 
 MIT
