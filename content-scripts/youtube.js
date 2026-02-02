@@ -47,10 +47,13 @@
       }
       videoInfo = data;
 
+      // 延迟检查，确保在 SUBTITLE_CAPTURED 处理之后
       // 如果在视频页面且有字幕轨道但未捕获，设置 pending（红色）
-      if (isVideoPage() && data?.captionTracks?.length > 0 && capturedSubtitles.length === 0) {
-        chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
-      }
+      setTimeout(() => {
+        if (isVideoPage() && videoInfo?.captionTracks?.length > 0 && capturedSubtitles.length === 0) {
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
+        }
+      }, 600); // 比 SUBTITLE_CAPTURED 的 500ms 延迟更长
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
