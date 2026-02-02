@@ -8,9 +8,6 @@
   let currentVideoId = null; // 追踪当前视频ID，用于检测视频切换
   let injectorLoaded = false;
 
-  // 防抖：记录最近通知的语言和时间
-  let lastNotification = { language: null, time: 0 };
-
   // 检查是否在视频页面
   function isVideoPage() {
     return window.location.pathname === '/watch' && window.location.search.includes('v=');
@@ -43,7 +40,6 @@
       // 检测是否切换了视频（只有在已有 currentVideoId 时才清空）
       if (data?.videoId && currentVideoId && data.videoId !== currentVideoId) {
         capturedSubtitles = []; // 清空旧字幕
-        lastNotification = { language: null, time: 0 }; // 重置防抖
       }
       // 更新 currentVideoId
       if (data?.videoId) {
@@ -68,16 +64,6 @@
           capturedSubtitles.push(data);
         }
 
-        // 防抖：3秒内同语言不重复提示
-        const now = Date.now();
-        if (lastNotification.language === data.language && now - lastNotification.time < 3000) {
-          return; // 跳过重复提示
-        }
-        lastNotification = { language: data.language, time: now };
-
-        // Show notification
-        showNotification(`字幕已捕获: ${data.language}`);
-
         // 设置 Badge 标记
         chrome.runtime.sendMessage({ type: 'SET_BADGE', captured: true });
       }, 500); // 延迟 500ms
@@ -90,48 +76,6 @@
       }
     }
   });
-
-  // Show a toast notification on the page
-  function showNotification(message) {
-    const existing = document.getElementById('subtitle-extractor-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.id = 'subtitle-extractor-toast';
-    toast.style.cssText = `
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      background: #4CAF50;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      z-index: 999999;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      animation: slideIn 0.3s ease;
-    `;
-    toast.textContent = message;
-
-    // Add animation style
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-    `;
-    document.head.appendChild(style);
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
 
   // Request video info from injected script
   function requestVideoInfo() {
