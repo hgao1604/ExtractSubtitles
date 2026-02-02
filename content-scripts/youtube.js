@@ -38,24 +38,23 @@
   // Inject immediately (interceptor works on all pages to catch navigations)
   injectScript();
 
-  // 监听 URL 变化，在导航时立即清空旧数据
-  let lastUrl = location.href;
-  const urlObserver = new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      const newVideoId = getVideoIdFromUrl();
+  // 初始化 currentVideoId
+  if (isVideoPage()) {
+    currentVideoId = getVideoIdFromUrl();
+  }
 
-      // 如果视频 ID 变化，清空旧数据
-      if (newVideoId && currentVideoId && newVideoId !== currentVideoId) {
-        capturedSubtitles = [];
-        lastNotification = { language: null, time: 0 };
-        currentVideoId = newVideoId;
-      } else if (newVideoId && !currentVideoId) {
-        currentVideoId = newVideoId;
-      }
+  // 监听 YouTube SPA 导航事件
+  document.addEventListener('yt-navigate-finish', () => {
+    const newVideoId = getVideoIdFromUrl();
+    if (newVideoId && currentVideoId && newVideoId !== currentVideoId) {
+      // 视频切换，清空旧数据
+      capturedSubtitles = [];
+      lastNotification = { language: null, time: 0 };
+    }
+    if (newVideoId) {
+      currentVideoId = newVideoId;
     }
   });
-  urlObserver.observe(document.body, { childList: true, subtree: true });
 
   // Listen for messages from injected script
   window.addEventListener('message', (event) => {
@@ -65,7 +64,7 @@
     const { type, data } = event.data;
 
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
-      // 更新 videoInfo（清空逻辑已移至 URL 变化监听器）
+      // 更新 videoInfo（视频切换的清空逻辑在 yt-navigate-finish 事件中处理）
       const urlVideoId = getVideoIdFromUrl();
       if (urlVideoId) {
         currentVideoId = urlVideoId;
