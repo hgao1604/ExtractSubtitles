@@ -58,23 +58,26 @@
         return;
       }
 
-      // 去重：检查是否已存在相同语言
-      const existingIndex = capturedSubtitles.findIndex(s => s.language === data.language);
-      if (existingIndex >= 0) {
-        capturedSubtitles[existingIndex] = data;
-      } else {
-        capturedSubtitles.push(data);
-      }
+      // 延迟处理，让 VIDEO_INFO_READY 有时间先到达完成清空操作
+      setTimeout(() => {
+        // 去重：检查是否已存在相同语言
+        const existingIndex = capturedSubtitles.findIndex(s => s.language === data.language);
+        if (existingIndex >= 0) {
+          capturedSubtitles[existingIndex] = data;
+        } else {
+          capturedSubtitles.push(data);
+        }
 
-      // 防抖：3秒内同语言不重复提示
-      const now = Date.now();
-      if (lastNotification.language === data.language && now - lastNotification.time < 3000) {
-        return; // 跳过重复提示
-      }
-      lastNotification = { language: data.language, time: now };
+        // 防抖：3秒内同语言不重复提示
+        const now = Date.now();
+        if (lastNotification.language === data.language && now - lastNotification.time < 3000) {
+          return; // 跳过重复提示
+        }
+        lastNotification = { language: data.language, time: now };
 
-      // Show notification
-      showNotification(`字幕已捕获: ${data.language}`);
+        // Show notification
+        showNotification(`字幕已捕获: ${data.language}`);
+      }, 500); // 延迟 500ms
     }
 
     if (type === 'CAPTURED_SUBTITLES') {
