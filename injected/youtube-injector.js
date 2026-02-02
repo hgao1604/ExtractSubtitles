@@ -289,6 +289,11 @@
 
   // 检查字幕是否已开启，如果是则触发重新加载
   function triggerSubtitleReloadIfNeeded() {
+    // 只在视频页面触发
+    if (!window.location.pathname.includes('/watch')) {
+      return false;
+    }
+
     const player = document.querySelector('#movie_player');
     if (!player || typeof player.isSubtitlesOn !== 'function') {
       return false;
@@ -308,15 +313,35 @@
     return false;
   }
 
-  // 页面加载后检查字幕状态
+  // 带重试的触发函数
+  function tryTriggerSubtitleReload(maxRetries, interval) {
+    let retries = 0;
+    const tryTrigger = () => {
+      if (window.__ytSubtitleData.capturedSubtitles.length > 0) {
+        return; // 已捕获，停止重试
+      }
+      if (retries >= maxRetries) {
+        return; // 达到最大重试次数
+      }
+      retries++;
+      if (!triggerSubtitleReloadIfNeeded()) {
+        // 如果触发失败（player 未准备好），稍后重试
+        setTimeout(tryTrigger, interval);
+      }
+    };
+    tryTrigger();
+  }
+
+  // 页面加载后检查字幕状态（多次重试）
   setTimeout(() => {
-    triggerSubtitleReloadIfNeeded();
+    tryTriggerSubtitleReload(5, 1000);
   }, 2000);
 
-  // 如果 2 秒后还没成功，再试一次
-  setTimeout(() => {
-    if (window.__ytSubtitleData.capturedSubtitles.length === 0) {
-      triggerSubtitleReloadIfNeeded();
-    }
-  }, 5000);
+  // 监听 SPA 导航后也触发检测
+  document.addEventListener('yt-navigate-finish', () => {
+    // 延迟后尝试触发
+    setTimeout(() => {
+      tryTriggerSubtitleReload(5, 1000);
+    }, 2000);
+  });
 })();
