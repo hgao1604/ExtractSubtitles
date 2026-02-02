@@ -305,4 +305,41 @@
   });
 
   console.log('[Subtitle Extractor] XHR interceptor installed');
+
+  // 检查字幕是否已开启，如果是则触发重新加载
+  function triggerSubtitleReloadIfNeeded() {
+    const player = document.querySelector('#movie_player');
+    if (!player || typeof player.isSubtitlesOn !== 'function') {
+      console.log('[Subtitle Extractor] Player not ready, will retry');
+      return false;
+    }
+
+    // 如果字幕已开启但我们没有捕获到数据
+    if (player.isSubtitlesOn() && window.__ytSubtitleData.capturedSubtitles.length === 0) {
+      console.log('[Subtitle Extractor] Subtitles already on, triggering reload');
+
+      // 关闭再打开字幕来触发新请求
+      player.toggleSubtitlesOn(); // 关闭
+      setTimeout(() => {
+        player.toggleSubtitlesOn(); // 打开
+        console.log('[Subtitle Extractor] Subtitle reload triggered');
+      }, 300);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  // 页面加载后检查字幕状态
+  setTimeout(() => {
+    triggerSubtitleReloadIfNeeded();
+  }, 2000);
+
+  // 如果 2 秒后还没成功，再试一次
+  setTimeout(() => {
+    if (window.__ytSubtitleData.capturedSubtitles.length === 0) {
+      triggerSubtitleReloadIfNeeded();
+    }
+  }, 5000);
 })();
