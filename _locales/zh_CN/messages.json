@@ -1,0 +1,108 @@
+{
+  "extName": {
+    "message": "Subtitle Extractor for AI",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "从B站和YouTube视频中提取字幕，供Claude等支持页面读取的AI助手使用",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "Subtitle Extractor for AI",
+    "description": "Popup header title"
+  },
+  "detecting": {
+    "message": "检测视频中...",
+    "description": "Loading state text"
+  },
+  "selectLanguage": {
+    "message": "选择语言:",
+    "description": "Language selector label"
+  },
+  "loading": {
+    "message": "加载中...",
+    "description": "Loading option text"
+  },
+  "extractSubtitles": {
+    "message": "提取字幕",
+    "description": "Extract button text"
+  },
+  "extracting": {
+    "message": "提取中...",
+    "description": "Extracting state text"
+  },
+  "extractSuccess": {
+    "message": "字幕提取成功！",
+    "description": "Success message"
+  },
+  "dataStoredHint": {
+    "message": "数据已存储在 $element$ 元素中",
+    "description": "Hint about where data is stored",
+    "placeholders": {
+      "element": {
+        "content": "$1",
+        "example": "#subtitle-extractor-data"
+      }
+    }
+  },
+  "noSubtitles": {
+    "message": "此视频没有可用字幕",
+    "description": "No subtitles warning"
+  },
+  "refresh": {
+    "message": "刷新",
+    "description": "Refresh button text"
+  },
+  "errorNotVideoPage": {
+    "message": "请打开 B站 或 YouTube 视频页面使用此插件",
+    "description": "Error when not on video page"
+  },
+  "errorCannotCommunicate": {
+    "message": "无法与页面通信，请刷新页面后重试",
+    "description": "Error when cannot communicate with content script"
+  },
+  "errorNotLoaded": {
+    "message": "插件未加载，请刷新页面 (Ctrl+R / Cmd+R)",
+    "description": "Error when content script not loaded"
+  },
+  "errorCannotDetect": {
+    "message": "无法检测视频信息，请刷新页面后重试",
+    "description": "Error when cannot detect video"
+  },
+  "unknownTitle": {
+    "message": "未知标题",
+    "description": "Fallback for unknown video title"
+  },
+  "capturedCount": {
+    "message": "已捕获 $count$ 条字幕",
+    "description": "Number of captured subtitles",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "waitingCapture": {
+    "message": "等待捕获字幕...",
+    "description": "Waiting for YouTube subtitle capture"
+  },
+  "enableSubtitlesHint": {
+    "message": "请开启字幕并播放视频，字幕将自动捕获",
+    "description": "Hint to enable subtitles on YouTube"
+  },
+  "errorExtractFailed": {
+    "message": "提取字幕失败: $error$",
+    "description": "Error when extraction fails",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "Network error"
+      }
+    }
+  },
+  "errorRefreshFailed": {
+    "message": "刷新失败，请重新加载页面",
+    "description": "Error when refresh fails"
+  }
+}

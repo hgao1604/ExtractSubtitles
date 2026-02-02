@@ -238,4 +238,14 @@ footer {
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-refresh {
+  gap: 6px;
+}
+
+.refresh-icon {
+  flex-shrink: 0;
 }

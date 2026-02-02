@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>B站字幕提取</title>
+  <title>Subtitle Extractor</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>字幕提取器</h1>
+      <h1 data-i18n="popupTitle"></h1>
     </header>
 
     <main>
       <section id="status-section" class="section">
         <div id="loading" class="loading">
           <span class="spinner"></span>
-          <span>检测视频中...</span>
+          <span data-i18n="detecting"></span>
         </div>
 
         <div id="error" class="error hidden">
@@ -31,39 +31,44 @@
       </section>
 
       <section id="subtitle-section" class="section hidden">
-        <label for="language-select">选择语言:</label>
+        <label for="language-select" data-i18n="selectLanguage"></label>
         <select id="language-select" class="select">
-          <option value="">加载中...</option>
+          <option value="" data-i18n="loading"></option>
         </select>
       </section>
 
       <section id="action-section" class="section hidden">
-        <button id="extract-btn" class="btn btn-primary">
-          提取字幕
+        <button id="extract-btn" class="btn btn-primary" data-i18n="extractSubtitles">
         </button>
       </section>
 
       <section id="success-section" class="section hidden">
         <div class="success">
           <span class="icon">✓</span>
-          <span>字幕提取成功！</span>
+          <span data-i18n="extractSuccess"></span>
         </div>
         <div class="hint">
-          数据已存储在 <code>#subtitle-extractor-data</code> 元素中
+          <span data-i18n="dataStoredHint" data-i18n-args="#subtitle-extractor-data"></span>
         </div>
       </section>
 
       <section id="no-subtitles-section" class="section hidden">
         <div class="warning">
           <span class="icon">ℹ️</span>
-          <span>此视频没有可用字幕</span>
+          <span data-i18n="noSubtitles"></span>
         </div>
       </section>
     </main>
 
     <footer>
-      <button id="refresh-btn" class="btn btn-secondary" title="刷新视频信息">
-        ↻ 刷新
+      <button id="refresh-btn" class="btn btn-secondary btn-refresh">
+        <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2v6h-6"></path>
+          <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+          <path d="M3 22v-6h6"></path>
+          <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+        </svg>
+        <span data-i18n="refresh"></span>
       </button>
     </footer>
   </div>

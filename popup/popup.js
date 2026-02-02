@@ -5,7 +5,29 @@ document.addEventListener('DOMContentLoaded', init);
 let elements = {};
 let currentStatus = null;
 
+// i18n helper function
+function getMessage(key, substitutions) {
+  return chrome.i18n.getMessage(key, substitutions) || key;
+}
+
+// Apply i18n to all elements with data-i18n attribute
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(element => {
+    const key = element.getAttribute('data-i18n');
+    const args = element.getAttribute('data-i18n-args');
+
+    if (args) {
+      element.textContent = getMessage(key, args.split(','));
+    } else {
+      element.textContent = getMessage(key);
+    }
+  });
+}
+
 async function init() {
+  // Apply i18n first
+  applyI18n();
+
   elements = {
     loading: document.getElementById('loading'),
     error: document.getElementById('error'),
@@ -43,14 +65,14 @@ async function checkStatus() {
     const isYouTube = url.includes('youtube.com/watch');
 
     if (!isBilibili && !isYouTube) {
-      showError('请打开 B站 或 YouTube 视频页面使用此插件');
+      showError(getMessage('errorNotVideoPage'));
       return;
     }
 
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_STATUS' });
 
     if (!response) {
-      showError('无法与页面通信，请刷新页面后重试');
+      showError(getMessage('errorCannotCommunicate'));
       return;
     }
 
@@ -60,15 +82,17 @@ async function checkStatus() {
     // 检测是否是连接错误（content script 未加载）
     if (error.message?.includes('Could not establish connection') ||
         error.message?.includes('Receiving end does not exist')) {
-      showError('插件未加载，请刷新页面 (Ctrl+R / Cmd+R)');
+      showError(getMessage('errorNotLoaded'));
     } else {
-      showError('无法检测视频信息，请刷新页面后重试');
+      showError(getMessage('errorCannotDetect'));
     }
   }
 }
 
 function displayStatus(status) {
   hideAll();
+
+  const unknownTitle = getMessage('unknownTitle');
 
   if (status.videoInfo) {
     elements.videoInfo.classList.remove('hidden');
@@ -79,14 +103,15 @@ function displayStatus(status) {
 
       // Show captured count for YouTube
       if (status.capturedCount > 0) {
-        elements.videoTitle.textContent = `${status.videoInfo.title || '未知标题'} (已捕获 ${status.capturedCount} 条字幕)`;
+        const capturedText = getMessage('capturedCount', [status.capturedCount.toString()]);
+        elements.videoTitle.textContent = `${status.videoInfo.title || unknownTitle} (${capturedText})`;
       } else {
-        elements.videoTitle.textContent = `${status.videoInfo.title || '未知标题'} (等待捕获字幕...)`;
+        elements.videoTitle.textContent = `${status.videoInfo.title || unknownTitle} (${getMessage('waitingCapture')})`;
       }
     } else {
       elements.platformBadge.textContent = 'Bilibili';
       elements.platformBadge.className = 'platform-badge bilibili';
-      elements.videoTitle.textContent = status.videoInfo.title || '未知标题';
+      elements.videoTitle.textContent = status.videoInfo.title || unknownTitle;
     }
   }
 
@@ -107,7 +132,7 @@ function displayStatus(status) {
       elements.noSubtitlesSection.classList.remove('hidden');
       const hint = elements.noSubtitlesSection.querySelector('.warning span:last-child');
       if (hint) {
-        hint.textContent = '请开启字幕并播放视频，字幕将自动捕获';
+        hint.textContent = getMessage('enableSubtitlesHint');
       }
     } else {
       elements.noSubtitlesSection.classList.remove('hidden');
@@ -135,7 +160,7 @@ async function extract() {
   const language = elements.languageSelect.value;
 
   elements.extractBtn.disabled = true;
-  elements.extractBtn.textContent = '提取中...';
+  elements.extractBtn.textContent = getMessage('extracting');
 
   try {
     const tab = await getCurrentTab();
@@ -155,10 +180,10 @@ async function extract() {
       elements.successSection.classList.remove('hidden');
     }
   } catch (error) {
-    showError('提取字幕失败: ' + error.message);
+    showError(getMessage('errorExtractFailed', [error.message]));
   } finally {
     elements.extractBtn.disabled = false;
-    elements.extractBtn.textContent = '提取字幕';
+    elements.extractBtn.textContent = getMessage('extractSubtitles');
   }
 }
 
@@ -171,7 +196,7 @@ async function refresh() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     await checkStatus();
   } catch (error) {
-    showError('刷新失败，请重新加载页面');
+    showError(getMessage('errorRefreshFailed'));
   } finally {
     elements.refreshBtn.disabled = false;
   }

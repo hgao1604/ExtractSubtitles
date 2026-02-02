@@ -1,0 +1,108 @@
+{
+  "extName": {
+    "message": "Subtitle Extractor for AI",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Extract video subtitles from Bilibili and YouTube for AI assistants like Claude that support page content reading",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "Subtitle Extractor for AI",
+    "description": "Popup header title"
+  },
+  "detecting": {
+    "message": "Detecting video...",
+    "description": "Loading state text"
+  },
+  "selectLanguage": {
+    "message": "Select language:",
+    "description": "Language selector label"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading option text"
+  },
+  "extractSubtitles": {
+    "message": "Extract Subtitles",
+    "description": "Extract button text"
+  },
+  "extracting": {
+    "message": "Extracting...",
+    "description": "Extracting state text"
+  },
+  "extractSuccess": {
+    "message": "Subtitles extracted successfully!",
+    "description": "Success message"
+  },
+  "dataStoredHint": {
+    "message": "Data is stored in the $element$ element",
+    "description": "Hint about where data is stored",
+    "placeholders": {
+      "element": {
+        "content": "$1",
+        "example": "#subtitle-extractor-data"
+      }
+    }
+  },
+  "noSubtitles": {
+    "message": "No subtitles available for this video",
+    "description": "No subtitles warning"
+  },
+  "refresh": {
+    "message": "Refresh",
+    "description": "Refresh button text"
+  },
+  "errorNotVideoPage": {
+    "message": "Please open a Bilibili or YouTube video page to use this extension",
+    "description": "Error when not on video page"
+  },
+  "errorCannotCommunicate": {
+    "message": "Cannot communicate with page, please refresh and try again",
+    "description": "Error when cannot communicate with content script"
+  },
+  "errorNotLoaded": {
+    "message": "Extension not loaded, please refresh the page (Ctrl+R / Cmd+R)",
+    "description": "Error when content script not loaded"
+  },
+  "errorCannotDetect": {
+    "message": "Cannot detect video info, please refresh and try again",
+    "description": "Error when cannot detect video"
+  },
+  "unknownTitle": {
+    "message": "Unknown title",
+    "description": "Fallback for unknown video title"
+  },
+  "capturedCount": {
+    "message": "$count$ subtitle(s) captured",
+    "description": "Number of captured subtitles",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "waitingCapture": {
+    "message": "Waiting for subtitle capture...",
+    "description": "Waiting for YouTube subtitle capture"
+  },
+  "enableSubtitlesHint": {
+    "message": "Please enable subtitles and play the video, subtitles will be captured automatically",
+    "description": "Hint to enable subtitles on YouTube"
+  },
+  "errorExtractFailed": {
+    "message": "Failed to extract subtitles: $error$",
+    "description": "Error when extraction fails",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "Network error"
+      }
+    }
+  },
+  "errorRefreshFailed": {
+    "message": "Refresh failed, please reload the page",
+    "description": "Error when refresh fails"
+  }
+}
