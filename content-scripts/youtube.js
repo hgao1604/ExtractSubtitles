@@ -53,6 +53,11 @@
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
+      // 只在视频页面处理字幕捕获
+      if (!isVideoPage()) {
+        return;
+      }
+
       // 去重：检查是否已存在相同语言
       const existingIndex = capturedSubtitles.findIndex(s => s.language === data.language);
       if (existingIndex >= 0) {
