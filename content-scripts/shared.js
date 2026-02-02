@@ -56,8 +56,6 @@ const SubtitleExtractor = {
       detail: { timestamp: Date.now() }
     });
     document.dispatchEvent(event);
-
-    console.log('[Subtitle Extractor] Data exposed to DOM', data);
   },
 
   // Get current exposed data

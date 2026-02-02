@@ -3,8 +3,6 @@
 (function() {
   'use strict';
 
-  console.log('[Subtitle Extractor] YouTube content script loaded');
-
   let videoInfo = null;
   let capturedSubtitles = [];
   let currentVideoId = null; // 追踪当前视频ID，用于检测视频切换
@@ -18,7 +16,6 @@
     script.src = chrome.runtime.getURL('injected/youtube-injector.js');
     script.onload = function() {
       this.remove();
-      console.log('[Subtitle Extractor] Injector script loaded');
     };
     (document.head || document.documentElement).appendChild(script);
   }
@@ -36,7 +33,6 @@
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
       // 检测是否切换了视频（只有在已有 currentVideoId 时才清空）
       if (data?.videoId && currentVideoId && data.videoId !== currentVideoId) {
-        console.log('[Subtitle Extractor] Video changed from', currentVideoId, 'to', data.videoId, ', clearing old data');
         capturedSubtitles = []; // 清空旧字幕
         lastNotification = { language: null, time: 0 }; // 重置防抖
       }
@@ -45,7 +41,6 @@
         currentVideoId = data.videoId;
       }
       videoInfo = data;
-      console.log('[Subtitle Extractor] Received video info:', data?.title);
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
@@ -56,7 +51,6 @@
       } else {
         capturedSubtitles.push(data);
       }
-      console.log('[Subtitle Extractor] Subtitle captured:', data.language, 'Total:', capturedSubtitles.length);
 
       // 防抖：3秒内同语言不重复提示
       const now = Date.now();
@@ -73,7 +67,6 @@
       // 只有在本地没有数据时才使用 injector 的数据，避免覆盖
       if (capturedSubtitles.length === 0 && data && data.length > 0) {
         capturedSubtitles = data;
-        console.log('[Subtitle Extractor] Synced subtitles from injector:', data.length);
       }
     }
   });
@@ -204,14 +197,11 @@
       container.setAttribute('data-subtitles', JSON.stringify(exportData));
     }
 
-    console.log('[Subtitle Extractor] Exported', formattedSubtitles.length, 'subtitle entries');
     return { success: true, count: formattedSubtitles.length };
   }
 
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('[Subtitle Extractor] Received message:', message.type);
-
     if (message.type === 'GET_STATUS') {
       // 从 URL 获取当前视频 ID
       const urlMatch = window.location.search.match(/[?&]v=([^&]+)/);
@@ -219,13 +209,11 @@
 
       // 如果本地 videoInfo 的 ID 与 URL 匹配，直接返回
       if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
-        console.log('[Subtitle Extractor] Using cached video info');
         sendResponse(getStatus());
         return true;
       }
 
       // 否则请求新的视频信息（不请求字幕，本地已有）
-      console.log('[Subtitle Extractor] Requesting fresh video info');
       requestVideoInfo();
       // 注意：不调用 requestCapturedSubtitles()，避免覆盖本地已捕获的字幕
 
@@ -236,11 +224,9 @@
         attempts++;
         if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
           clearInterval(checkInterval);
-          console.log('[Subtitle Extractor] Got fresh video info');
           sendResponse(getStatus());
         } else if (attempts >= maxAttempts) {
           clearInterval(checkInterval);
-          console.log('[Subtitle Extractor] Timeout, returning current data');
           sendResponse(getStatus());
         }
       }, 100);
@@ -265,6 +251,4 @@
   setTimeout(() => {
     requestVideoInfo();
   }, 1000);
-
-  console.log('[Subtitle Extractor] YouTube content script initialized');
 })();

@@ -91,7 +91,6 @@ async function handleFetchSubtitleContent(url) {
     const data = await response.json();
     return { success: true, data };
   } catch (error) {
-    console.error('[Subtitle Extractor] Fetch subtitle content error:', error);
     return { success: false, error: error.message };
   }
 }

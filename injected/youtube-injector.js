@@ -4,8 +4,6 @@
 (function() {
   'use strict';
 
-  console.log('[Subtitle Extractor] YouTube injector loaded');
-
   // Storage for captured subtitles
   window.__ytSubtitleData = {
     videoInfo: null,
@@ -30,12 +28,9 @@
 
     // Check if this is a timedtext (subtitle) request
     if (url && typeof url === 'string' && url.includes('timedtext')) {
-      console.log('[Subtitle Extractor] Intercepted timedtext request:', url.substring(0, 100));
-
       this.addEventListener('load', function() {
         try {
           const responseText = this.responseText;
-          console.log('[Subtitle Extractor] Response received, status:', this.status, 'length:', responseText?.length);
 
           if (this.status === 200 && responseText && responseText.length > 0) {
             // Parse the subtitle data
@@ -45,9 +40,8 @@
             if (url.includes('fmt=json3') || responseText.trim().startsWith('{')) {
               try {
                 subtitleData = JSON.parse(responseText);
-                console.log('[Subtitle Extractor] Parsed JSON, events:', subtitleData.events?.length);
               } catch (e) {
-                console.log('[Subtitle Extractor] JSON parse failed, trying XML');
+                // Try XML format instead
               }
             }
 
@@ -75,12 +69,10 @@
               if (existingIndex >= 0) {
                 // 更新已有记录（保留最新数据）
                 window.__ytSubtitleData.capturedSubtitles[existingIndex] = captureInfo;
-                console.log('[Subtitle Extractor] Subtitle updated:', captureInfo.language);
               } else {
                 // 新语言，添加记录
                 window.__ytSubtitleData.capturedSubtitles.push(captureInfo);
                 isNewCapture = true;
-                console.log('[Subtitle Extractor] Subtitle captured successfully!', captureInfo.language);
               }
 
               window.__ytSubtitleData.lastCaptureTime = Date.now();
@@ -94,11 +86,9 @@
                 }, '*');
               }
             }
-          } else {
-            console.log('[Subtitle Extractor] Empty or failed response');
           }
         } catch (error) {
-          console.error('[Subtitle Extractor] Error processing response:', error);
+          // Silent fail
         }
       });
     }
@@ -130,7 +120,6 @@
 
       return { events };
     } catch (e) {
-      console.error('[Subtitle Extractor] XML parse error:', e);
       return null;
     }
   }
@@ -182,7 +171,6 @@
         })) || []
       };
     } catch (e) {
-      console.error('[Subtitle Extractor] Error getting video info:', e);
       return null;
     }
   }
@@ -234,7 +222,6 @@
 
     if (type === 'CLEAR_CAPTURED') {
       window.__ytSubtitleData.capturedSubtitles = [];
-      console.log('[Subtitle Extractor] Cleared captured subtitles');
     }
   });
 
@@ -250,7 +237,6 @@
           type: 'VIDEO_INFO_READY',
           data: info
         }, '*');
-        console.log('[Subtitle Extractor] Video info ready:', info.title);
       }
     }
   }, 500);
@@ -266,7 +252,6 @@
 
   // Watch for SPA navigation
   document.addEventListener('yt-navigate-finish', () => {
-    console.log('[Subtitle Extractor] Navigation detected, clearing old data');
     window.__ytSubtitleData.capturedSubtitles = [];
 
     const expectedVideoId = getVideoIdFromUrl();
@@ -287,10 +272,8 @@
           type: 'VIDEO_INFO_READY',
           data: info
         }, '*');
-        console.log('[Subtitle Extractor] New video info ready:', info.title);
       } else if (attempts >= maxAttempts) {
         clearInterval(pollForNewVideo);
-        console.log('[Subtitle Extractor] Timeout waiting for new video info');
         // 超时后仍发送当前信息
         if (info) {
           window.__ytSubtitleData.videoInfo = info;
@@ -304,25 +287,19 @@
     }, 500);
   });
 
-  console.log('[Subtitle Extractor] XHR interceptor installed');
-
   // 检查字幕是否已开启，如果是则触发重新加载
   function triggerSubtitleReloadIfNeeded() {
     const player = document.querySelector('#movie_player');
     if (!player || typeof player.isSubtitlesOn !== 'function') {
-      console.log('[Subtitle Extractor] Player not ready, will retry');
       return false;
     }
 
     // 如果字幕已开启但我们没有捕获到数据
     if (player.isSubtitlesOn() && window.__ytSubtitleData.capturedSubtitles.length === 0) {
-      console.log('[Subtitle Extractor] Subtitles already on, triggering reload');
-
       // 关闭再打开字幕来触发新请求
       player.toggleSubtitlesOn(); // 关闭
       setTimeout(() => {
         player.toggleSubtitlesOn(); // 打开
-        console.log('[Subtitle Extractor] Subtitle reload triggered');
       }, 300);
 
       return true;

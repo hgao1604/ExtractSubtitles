@@ -57,8 +57,6 @@ async function checkStatus() {
     currentStatus = response;
     displayStatus(response);
   } catch (error) {
-    console.error('Error checking status:', error);
-
     // 检测是否是连接错误（content script 未加载）
     if (error.message?.includes('Could not establish connection') ||
         error.message?.includes('Receiving end does not exist')) {
@@ -157,7 +155,6 @@ async function extract() {
       elements.successSection.classList.remove('hidden');
     }
   } catch (error) {
-    console.error('Error extracting subtitles:', error);
     showError('提取字幕失败: ' + error.message);
   } finally {
     elements.extractBtn.disabled = false;
@@ -174,7 +171,6 @@ async function refresh() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     await checkStatus();
   } catch (error) {
-    console.error('Error refreshing:', error);
     showError('刷新失败，请重新加载页面');
   } finally {
     elements.refreshBtn.disabled = false;

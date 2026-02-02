@@ -12,8 +12,6 @@
     if (isInitialized) return;
     isInitialized = true;
 
-    console.log('[Subtitle Extractor] Bilibili content script loaded');
-
     // Inject the page script to access __INITIAL_STATE__
     await SubtitleExtractor.injectScript('injected/bilibili-injector.js');
 
@@ -33,7 +31,6 @@
   function handlePageMessage(message) {
     if (message.type === 'VIDEO_INFO' || message.type === 'VIDEO_INFO_READY') {
       videoInfo = message.data;
-      console.log('[Subtitle Extractor] Got video info:', videoInfo);
 
       if (videoInfo?.bvid && videoInfo?.cid) {
         fetchSubtitleList();
@@ -70,7 +67,6 @@
   // Fetch subtitle list from Bilibili API
   async function fetchSubtitleList() {
     if (!videoInfo?.bvid || !videoInfo?.cid) {
-      console.log('[Subtitle Extractor] Missing bvid or cid');
       return;
     }
 
@@ -83,12 +79,9 @@
 
       if (response.success) {
         subtitleList = response.subtitles || [];
-        console.log('[Subtitle Extractor] Got subtitle list:', subtitleList);
-      } else {
-        console.error('[Subtitle Extractor] Failed to fetch subtitle list:', response.error);
       }
     } catch (error) {
-      console.error('[Subtitle Extractor] Error fetching subtitle list:', error);
+      // Silent fail
     }
   }
 
@@ -137,7 +130,6 @@
         data: exportData
       };
     } catch (error) {
-      console.error('[Subtitle Extractor] Error extracting subtitle:', error);
       throw error;
     }
   }
@@ -147,7 +139,6 @@
   const observer = new MutationObserver(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
-      console.log('[Subtitle Extractor] URL changed, reinitializing...');
       videoInfo = null;
       subtitleList = [];
 

@@ -31,7 +31,6 @@
 
       return null;
     } catch (error) {
-      console.error('[Subtitle Extractor] Error getting video info:', error);
       return null;
     }
   }
