@@ -79,9 +79,11 @@
 
       if (response.success) {
         subtitleList = response.subtitles || [];
-        // 如果有字幕可用，设置 ready 状态（绿色：可以提取）
+        // 根据是否有字幕设置 Badge
         if (subtitleList.length > 0) {
-          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' });
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' }); // 绿色：有字幕
+        } else {
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' }); // 红色：无字幕
         }
       }
     } catch (error) {

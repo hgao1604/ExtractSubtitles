@@ -29,11 +29,6 @@
   // Inject immediately (interceptor works on all pages to catch navigations)
   injectScript();
 
-  // 如果是视频页面，设置 pending 状态（红色：提示用户开启字幕）
-  if (isVideoPage()) {
-    chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
-  }
-
   // Listen for messages from injected script
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
@@ -51,6 +46,11 @@
         currentVideoId = data.videoId;
       }
       videoInfo = data;
+
+      // 如果在视频页面且有字幕轨道但未捕获，设置 pending（红色）
+      if (isVideoPage() && data?.captionTracks?.length > 0 && capturedSubtitles.length === 0) {
+        chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
+      }
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
