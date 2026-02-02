@@ -151,28 +151,59 @@
   // Get video info from page
   function getVideoInfo() {
     try {
-      if (window.ytInitialPlayerResponse) {
-        const response = window.ytInitialPlayerResponse;
-        const videoDetails = response.videoDetails || {};
-        const captions = response.captions?.playerCaptionsTracklistRenderer;
+      // 优先从 URL 获取视频 ID（最可靠）
+      const urlVideoId = getVideoIdFromUrl();
 
-        return {
-          videoId: videoDetails.videoId,
-          title: videoDetails.title,
-          author: videoDetails.author,
-          lengthSeconds: videoDetails.lengthSeconds,
-          captionTracks: captions?.captionTracks?.map(t => ({
-            languageCode: t.languageCode,
-            name: t.name?.simpleText || t.name?.runs?.[0]?.text || '',
-            baseUrl: t.baseUrl
-          })) || []
-        };
-      }
-      return null;
+      // 从 DOM 获取标题（SPA 导航后更可靠）
+      const domTitle = getTitleFromDOM();
+
+      // 从 ytInitialPlayerResponse 获取详细信息
+      const response = window.ytInitialPlayerResponse;
+      const videoDetails = response?.videoDetails || {};
+      const captions = response?.captions?.playerCaptionsTracklistRenderer;
+
+      // 使用 URL 中的 videoId，如果与 response 中的不匹配，说明 response 是旧的
+      const videoId = urlVideoId || videoDetails.videoId;
+
+      // 如果 response 中的 videoId 与 URL 不匹配，使用 DOM 标题
+      const title = (videoDetails.videoId === urlVideoId)
+        ? videoDetails.title
+        : (domTitle || videoDetails.title);
+
+      return {
+        videoId: videoId,
+        title: title,
+        author: videoDetails.author,
+        lengthSeconds: videoDetails.lengthSeconds,
+        captionTracks: captions?.captionTracks?.map(t => ({
+          languageCode: t.languageCode,
+          name: t.name?.simpleText || t.name?.runs?.[0]?.text || '',
+          baseUrl: t.baseUrl
+        })) || []
+      };
     } catch (e) {
       console.error('[Subtitle Extractor] Error getting video info:', e);
       return null;
     }
+  }
+
+  // 从 DOM 获取视频标题
+  function getTitleFromDOM() {
+    // 方法1: 从 h1 标题元素获取
+    const h1 = document.querySelector('h1.ytd-video-primary-info-renderer yt-formatted-string');
+    if (h1?.textContent) return h1.textContent.trim();
+
+    // 方法2: 从页面标题获取（去掉 " - YouTube" 后缀）
+    const pageTitle = document.title;
+    if (pageTitle && pageTitle.includes(' - YouTube')) {
+      return pageTitle.replace(' - YouTube', '').trim();
+    }
+
+    // 方法3: 从 meta 标签获取
+    const metaTitle = document.querySelector('meta[name="title"]');
+    if (metaTitle?.content) return metaTitle.content;
+
+    return null;
   }
 
   // Listen for messages from content script
