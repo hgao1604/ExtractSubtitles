@@ -79,6 +79,10 @@
 
       if (response.success) {
         subtitleList = response.subtitles || [];
+        // 如果有字幕可用，设置 pending 状态（红色：提示用户点击提取）
+        if (subtitleList.length > 0) {
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
+        }
       }
     } catch (error) {
       // Silent fail
@@ -125,8 +129,8 @@
 
       SubtitleExtractor.exposeToDOM(exportData);
 
-      // 设置 Badge 标记
-      chrome.runtime.sendMessage({ type: 'SET_BADGE', captured: true });
+      // 设置 Badge 标记（绿色：就绪）
+      chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' });
 
       return {
         success: true,

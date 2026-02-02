@@ -29,6 +29,11 @@
   // Inject immediately (interceptor works on all pages to catch navigations)
   injectScript();
 
+  // 如果是视频页面，设置 pending 状态（红色：提示用户开启字幕）
+  if (isVideoPage()) {
+    chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' });
+  }
+
   // Listen for messages from injected script
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
@@ -64,8 +69,8 @@
           capturedSubtitles.push(data);
         }
 
-        // 设置 Badge 标记
-        chrome.runtime.sendMessage({ type: 'SET_BADGE', captured: true });
+        // 设置 Badge 标记（绿色：就绪）
+        chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' });
       }, 500); // 延迟 500ms
     }
 

@@ -1,25 +1,35 @@
 // Service Worker for handling cross-origin API requests
 
 // Badge 相关功能
-function setBadge(tabId, captured = false) {
-  if (captured) {
-    chrome.action.setBadgeText({ text: '✓', tabId });
-    chrome.action.setBadgeBackgroundColor({ color: '#4CAF50', tabId });
-  } else {
-    chrome.action.setBadgeText({ text: '', tabId });
+// status: 'none' | 'pending' | 'ready'
+function setBadge(tabId, status = 'none') {
+  switch (status) {
+    case 'ready':
+      // 绿色：字幕已捕获，可以提取
+      chrome.action.setBadgeText({ text: '✓', tabId });
+      chrome.action.setBadgeBackgroundColor({ color: '#4CAF50', tabId });
+      break;
+    case 'pending':
+      // 红色：在视频页面，但字幕未捕获
+      chrome.action.setBadgeText({ text: '!', tabId });
+      chrome.action.setBadgeBackgroundColor({ color: '#F44336', tabId });
+      break;
+    default:
+      // 无：非视频页面
+      chrome.action.setBadgeText({ text: '', tabId });
   }
 }
 
 // 标签页更新时清除 badge（URL 变化）
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.url) {
-    setBadge(tabId, false);
+    setBadge(tabId, 'none');
   }
 });
 
 // 标签页关闭时清理
 chrome.tabs.onRemoved.addListener((tabId) => {
-  setBadge(tabId, false);
+  setBadge(tabId, 'none');
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -27,7 +37,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SET_BADGE') {
     const tabId = sender.tab?.id;
     if (tabId) {
-      setBadge(tabId, message.captured);
+      setBadge(tabId, message.status); // status: 'none' | 'pending' | 'ready'
     }
     sendResponse({ success: true });
     return true;
