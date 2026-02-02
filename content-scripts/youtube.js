@@ -7,6 +7,7 @@
 
   let videoInfo = null;
   let capturedSubtitles = [];
+  let currentVideoId = null; // 追踪当前视频ID，用于检测视频切换
 
   // 防抖：记录最近通知的语言和时间
   let lastNotification = { language: null, time: 0 };
@@ -33,6 +34,13 @@
     const { type, data } = event.data;
 
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
+      // 检测是否切换了视频
+      if (data?.videoId && data.videoId !== currentVideoId) {
+        console.log('[Subtitle Extractor] Video changed, clearing old data');
+        capturedSubtitles = []; // 清空旧字幕
+        lastNotification = { language: null, time: 0 }; // 重置防抖
+        currentVideoId = data.videoId;
+      }
       videoInfo = data;
       console.log('[Subtitle Extractor] Received video info:', data?.title);
     }
