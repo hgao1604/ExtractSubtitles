@@ -34,11 +34,14 @@
     const { type, data } = event.data;
 
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
-      // 检测是否切换了视频
-      if (data?.videoId && data.videoId !== currentVideoId) {
-        console.log('[Subtitle Extractor] Video changed, clearing old data');
+      // 检测是否切换了视频（只有在已有 currentVideoId 时才清空）
+      if (data?.videoId && currentVideoId && data.videoId !== currentVideoId) {
+        console.log('[Subtitle Extractor] Video changed from', currentVideoId, 'to', data.videoId, ', clearing old data');
         capturedSubtitles = []; // 清空旧字幕
         lastNotification = { language: null, time: 0 }; // 重置防抖
+      }
+      // 更新 currentVideoId
+      if (data?.videoId) {
         currentVideoId = data.videoId;
       }
       videoInfo = data;
