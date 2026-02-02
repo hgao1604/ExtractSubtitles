@@ -206,14 +206,37 @@
     console.log('[Subtitle Extractor] Received message:', message.type);
 
     if (message.type === 'GET_STATUS') {
-      // Request fresh data from injector
+      // 从 URL 获取当前视频 ID
+      const urlMatch = window.location.search.match(/[?&]v=([^&]+)/);
+      const currentUrlVideoId = urlMatch ? urlMatch[1] : null;
+
+      // 如果本地 videoInfo 的 ID 与 URL 匹配，直接返回
+      if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
+        console.log('[Subtitle Extractor] Using cached video info');
+        sendResponse(getStatus());
+        return true;
+      }
+
+      // 否则请求新数据并等待
+      console.log('[Subtitle Extractor] Requesting fresh video info');
       requestVideoInfo();
       requestCapturedSubtitles();
 
-      // Wait a bit for responses
-      setTimeout(() => {
-        sendResponse(getStatus());
-      }, 300);
+      // 等待 injector 响应，最多等 2 秒
+      let attempts = 0;
+      const maxAttempts = 20;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
+          clearInterval(checkInterval);
+          console.log('[Subtitle Extractor] Got fresh video info');
+          sendResponse(getStatus());
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          console.log('[Subtitle Extractor] Timeout, returning current data');
+          sendResponse(getStatus());
+        }
+      }, 100);
 
       return true; // Keep channel open
     }
