@@ -77,6 +77,9 @@
 
         // Show notification
         showNotification(`字幕已捕获: ${data.language}`);
+
+        // 设置 Badge 标记
+        chrome.runtime.sendMessage({ type: 'SET_BADGE', captured: true });
       }, 500); // 延迟 500ms
     }
 

@@ -125,6 +125,9 @@
 
       SubtitleExtractor.exposeToDOM(exportData);
 
+      // 设置 Badge 标记
+      chrome.runtime.sendMessage({ type: 'SET_BADGE', captured: true });
+
       return {
         success: true,
         data: exportData
