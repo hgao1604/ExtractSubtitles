@@ -79,6 +79,12 @@
 
       if (response.success) {
         subtitleList = response.subtitles || [];
+        // 根据是否有字幕设置 Badge
+        if (subtitleList.length > 0) {
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' }); // 绿色：有字幕
+        } else {
+          chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'pending' }); // 红色：无字幕
+        }
       }
     } catch (error) {
       // Silent fail
@@ -124,6 +130,9 @@
       );
 
       SubtitleExtractor.exposeToDOM(exportData);
+
+      // 设置 Badge 标记（绿色：就绪）
+      chrome.runtime.sendMessage({ type: 'SET_BADGE', status: 'ready' });
 
       return {
         success: true,
