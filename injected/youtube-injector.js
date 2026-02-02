@@ -227,22 +227,50 @@
   // Stop checking after 30 seconds
   setTimeout(() => clearInterval(checkReady), 30000);
 
+  // 从 URL 获取当前视频 ID
+  function getVideoIdFromUrl() {
+    const match = window.location.search.match(/[?&]v=([^&]+)/);
+    return match ? match[1] : null;
+  }
+
   // Watch for SPA navigation
   document.addEventListener('yt-navigate-finish', () => {
     console.log('[Subtitle Extractor] Navigation detected, clearing old data');
     window.__ytSubtitleData.capturedSubtitles = [];
 
-    setTimeout(() => {
+    const expectedVideoId = getVideoIdFromUrl();
+    let attempts = 0;
+    const maxAttempts = 20; // 最多尝试 10 秒
+
+    // 轮询等待 ytInitialPlayerResponse 更新为新视频
+    const pollForNewVideo = setInterval(() => {
+      attempts++;
       const info = getVideoInfo();
-      if (info) {
+
+      // 检查是否已获取到新视频信息
+      if (info && info.videoId === expectedVideoId) {
+        clearInterval(pollForNewVideo);
         window.__ytSubtitleData.videoInfo = info;
         window.postMessage({
           source: 'subtitle-extractor-yt-injector',
           type: 'VIDEO_INFO_READY',
           data: info
         }, '*');
+        console.log('[Subtitle Extractor] New video info ready:', info.title);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollForNewVideo);
+        console.log('[Subtitle Extractor] Timeout waiting for new video info');
+        // 超时后仍发送当前信息
+        if (info) {
+          window.__ytSubtitleData.videoInfo = info;
+          window.postMessage({
+            source: 'subtitle-extractor-yt-injector',
+            type: 'VIDEO_INFO_READY',
+            data: info
+          }, '*');
+        }
       }
-    }, 1000);
+    }, 500);
   });
 
   console.log('[Subtitle Extractor] XHR interceptor installed');
