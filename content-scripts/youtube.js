@@ -16,6 +16,12 @@
     return window.location.pathname === '/watch' && window.location.search.includes('v=');
   }
 
+  // 从 URL 获取当前视频 ID
+  function getVideoIdFromUrl() {
+    const match = window.location.search.match(/[?&]v=([^&]+)/);
+    return match ? match[1] : null;
+  }
+
   // Inject the interceptor script into page context
   function injectScript() {
     if (injectorLoaded) return;
@@ -32,6 +38,25 @@
   // Inject immediately (interceptor works on all pages to catch navigations)
   injectScript();
 
+  // 监听 URL 变化，在导航时立即清空旧数据
+  let lastUrl = location.href;
+  const urlObserver = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      const newVideoId = getVideoIdFromUrl();
+
+      // 如果视频 ID 变化，清空旧数据
+      if (newVideoId && currentVideoId && newVideoId !== currentVideoId) {
+        capturedSubtitles = [];
+        lastNotification = { language: null, time: 0 };
+        currentVideoId = newVideoId;
+      } else if (newVideoId && !currentVideoId) {
+        currentVideoId = newVideoId;
+      }
+    }
+  });
+  urlObserver.observe(document.body, { childList: true, subtree: true });
+
   // Listen for messages from injected script
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
@@ -40,13 +65,11 @@
     const { type, data } = event.data;
 
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
-      // 检测是否切换了视频（只有在已有 currentVideoId 时才清空）
-      if (data?.videoId && currentVideoId && data.videoId !== currentVideoId) {
-        capturedSubtitles = []; // 清空旧字幕
-        lastNotification = { language: null, time: 0 }; // 重置防抖
-      }
-      // 更新 currentVideoId
-      if (data?.videoId) {
+      // 更新 videoInfo（清空逻辑已移至 URL 变化监听器）
+      const urlVideoId = getVideoIdFromUrl();
+      if (urlVideoId) {
+        currentVideoId = urlVideoId;
+      } else if (data?.videoId) {
         currentVideoId = data.videoId;
       }
       videoInfo = data;
