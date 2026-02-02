@@ -8,6 +8,9 @@
   let videoInfo = null;
   let capturedSubtitles = [];
 
+  // 防抖：记录最近通知的语言和时间
+  let lastNotification = { language: null, time: 0 };
+
   // Inject the interceptor script into page context ASAP
   function injectScript() {
     const script = document.createElement('script');
@@ -35,8 +38,21 @@
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
-      capturedSubtitles.push(data);
+      // 去重：检查是否已存在相同语言
+      const existingIndex = capturedSubtitles.findIndex(s => s.language === data.language);
+      if (existingIndex >= 0) {
+        capturedSubtitles[existingIndex] = data;
+      } else {
+        capturedSubtitles.push(data);
+      }
       console.log('[Subtitle Extractor] Subtitle captured:', data.language, 'Total:', capturedSubtitles.length);
+
+      // 防抖：3秒内同语言不重复提示
+      const now = Date.now();
+      if (lastNotification.language === data.language && now - lastNotification.time < 3000) {
+        return; // 跳过重复提示
+      }
+      lastNotification = { language: data.language, time: now };
 
       // Show notification
       showNotification(`字幕已捕获: ${data.language}`);

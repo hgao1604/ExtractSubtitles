@@ -66,17 +66,33 @@
                 language: extractLanguageFromUrl(url)
               };
 
-              window.__ytSubtitleData.capturedSubtitles.push(captureInfo);
+              // 去重：检查是否已存在相同语言的字幕
+              const existingIndex = window.__ytSubtitleData.capturedSubtitles.findIndex(
+                s => s.language === captureInfo.language
+              );
+
+              let isNewCapture = false;
+              if (existingIndex >= 0) {
+                // 更新已有记录（保留最新数据）
+                window.__ytSubtitleData.capturedSubtitles[existingIndex] = captureInfo;
+                console.log('[Subtitle Extractor] Subtitle updated:', captureInfo.language);
+              } else {
+                // 新语言，添加记录
+                window.__ytSubtitleData.capturedSubtitles.push(captureInfo);
+                isNewCapture = true;
+                console.log('[Subtitle Extractor] Subtitle captured successfully!', captureInfo.language);
+              }
+
               window.__ytSubtitleData.lastCaptureTime = Date.now();
 
-              console.log('[Subtitle Extractor] Subtitle captured successfully!', captureInfo.language);
-
-              // Notify content script
-              window.postMessage({
-                source: 'subtitle-extractor-yt-injector',
-                type: 'SUBTITLE_CAPTURED',
-                data: captureInfo
-              }, '*');
+              // 只有新捕获的字幕才通知 content script
+              if (isNewCapture) {
+                window.postMessage({
+                  source: 'subtitle-extractor-yt-injector',
+                  type: 'SUBTITLE_CAPTURED',
+                  data: captureInfo
+                }, '*');
+              }
             }
           } else {
             console.log('[Subtitle Extractor] Empty or failed response');
