@@ -25,7 +25,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.youtube.com/watch*", "https://youtube.com/watch*"],
+      "matches": ["https://www.youtube.com/*", "https://youtube.com/*"],
       "js": ["content-scripts/shared.js", "content-scripts/youtube.js"],
       "run_at": "document_start"
     }
@@ -33,7 +33,7 @@
   "web_accessible_resources": [
     {
       "resources": ["injected/bilibili-injector.js", "injected/youtube-injector.js"],
-      "matches": ["https://www.bilibili.com/*", "https://www.youtube.com/*"]
+      "matches": ["https://www.bilibili.com/*", "https://www.youtube.com/*", "https://youtube.com/*"]
     }
   ],
   "action": {

@@ -6,21 +6,30 @@
   let videoInfo = null;
   let capturedSubtitles = [];
   let currentVideoId = null; // 追踪当前视频ID，用于检测视频切换
+  let injectorLoaded = false;
 
   // 防抖：记录最近通知的语言和时间
   let lastNotification = { language: null, time: 0 };
 
-  // Inject the interceptor script into page context ASAP
+  // 检查是否在视频页面
+  function isVideoPage() {
+    return window.location.pathname === '/watch' && window.location.search.includes('v=');
+  }
+
+  // Inject the interceptor script into page context
   function injectScript() {
+    if (injectorLoaded) return;
+
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL('injected/youtube-injector.js');
     script.onload = function() {
       this.remove();
+      injectorLoaded = true;
     };
     (document.head || document.documentElement).appendChild(script);
   }
 
-  // Inject immediately
+  // Inject immediately (interceptor works on all pages to catch navigations)
   injectScript();
 
   // Listen for messages from injected script
