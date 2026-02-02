@@ -7,6 +7,10 @@
 
   let videoInfo = null;
   let capturedSubtitles = [];
+  let currentVideoId = null; // 追踪当前视频ID，用于检测视频切换
+
+  // 防抖：记录最近通知的语言和时间
+  let lastNotification = { language: null, time: 0 };
 
   // Inject the interceptor script into page context ASAP
   function injectScript() {
@@ -30,20 +34,47 @@
     const { type, data } = event.data;
 
     if (type === 'VIDEO_INFO' || type === 'VIDEO_INFO_READY') {
+      // 检测是否切换了视频（只有在已有 currentVideoId 时才清空）
+      if (data?.videoId && currentVideoId && data.videoId !== currentVideoId) {
+        console.log('[Subtitle Extractor] Video changed from', currentVideoId, 'to', data.videoId, ', clearing old data');
+        capturedSubtitles = []; // 清空旧字幕
+        lastNotification = { language: null, time: 0 }; // 重置防抖
+      }
+      // 更新 currentVideoId
+      if (data?.videoId) {
+        currentVideoId = data.videoId;
+      }
       videoInfo = data;
       console.log('[Subtitle Extractor] Received video info:', data?.title);
     }
 
     if (type === 'SUBTITLE_CAPTURED') {
-      capturedSubtitles.push(data);
+      // 去重：检查是否已存在相同语言
+      const existingIndex = capturedSubtitles.findIndex(s => s.language === data.language);
+      if (existingIndex >= 0) {
+        capturedSubtitles[existingIndex] = data;
+      } else {
+        capturedSubtitles.push(data);
+      }
       console.log('[Subtitle Extractor] Subtitle captured:', data.language, 'Total:', capturedSubtitles.length);
+
+      // 防抖：3秒内同语言不重复提示
+      const now = Date.now();
+      if (lastNotification.language === data.language && now - lastNotification.time < 3000) {
+        return; // 跳过重复提示
+      }
+      lastNotification = { language: data.language, time: now };
 
       // Show notification
       showNotification(`字幕已捕获: ${data.language}`);
     }
 
     if (type === 'CAPTURED_SUBTITLES') {
-      capturedSubtitles = data || [];
+      // 只有在本地没有数据时才使用 injector 的数据，避免覆盖
+      if (capturedSubtitles.length === 0 && data && data.length > 0) {
+        capturedSubtitles = data;
+        console.log('[Subtitle Extractor] Synced subtitles from injector:', data.length);
+      }
     }
   });
 
@@ -182,14 +213,37 @@
     console.log('[Subtitle Extractor] Received message:', message.type);
 
     if (message.type === 'GET_STATUS') {
-      // Request fresh data from injector
-      requestVideoInfo();
-      requestCapturedSubtitles();
+      // 从 URL 获取当前视频 ID
+      const urlMatch = window.location.search.match(/[?&]v=([^&]+)/);
+      const currentUrlVideoId = urlMatch ? urlMatch[1] : null;
 
-      // Wait a bit for responses
-      setTimeout(() => {
+      // 如果本地 videoInfo 的 ID 与 URL 匹配，直接返回
+      if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
+        console.log('[Subtitle Extractor] Using cached video info');
         sendResponse(getStatus());
-      }, 300);
+        return true;
+      }
+
+      // 否则请求新的视频信息（不请求字幕，本地已有）
+      console.log('[Subtitle Extractor] Requesting fresh video info');
+      requestVideoInfo();
+      // 注意：不调用 requestCapturedSubtitles()，避免覆盖本地已捕获的字幕
+
+      // 等待 injector 响应，最多等 2 秒
+      let attempts = 0;
+      const maxAttempts = 20;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (videoInfo && videoInfo.videoId === currentUrlVideoId) {
+          clearInterval(checkInterval);
+          console.log('[Subtitle Extractor] Got fresh video info');
+          sendResponse(getStatus());
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          console.log('[Subtitle Extractor] Timeout, returning current data');
+          sendResponse(getStatus());
+        }
+      }, 100);
 
       return true; // Keep channel open
     }

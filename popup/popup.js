@@ -58,7 +58,14 @@ async function checkStatus() {
     displayStatus(response);
   } catch (error) {
     console.error('Error checking status:', error);
-    showError('无法检测视频信息，请刷新页面后重试');
+
+    // 检测是否是连接错误（content script 未加载）
+    if (error.message?.includes('Could not establish connection') ||
+        error.message?.includes('Receiving end does not exist')) {
+      showError('插件未加载，请刷新页面 (Ctrl+R / Cmd+R)');
+    } else {
+      showError('无法检测视频信息，请刷新页面后重试');
+    }
   }
 }
 
